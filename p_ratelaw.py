@@ -143,9 +143,11 @@ class RateLaw(RateLawWidget, SpyderPluginMixin):
 
     #------ Public API ---------------------------------------------------------    
     # Insert text into the editor window
+    """
     def pressbutton(self,string):
         self.insertText(string)
-    
+    """
+    """Accesses console to paste text"""
     def insertText(self,inserttest):
         checkinsert = inserttest
         #print(checkinsert)

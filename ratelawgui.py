@@ -14,7 +14,7 @@ HelloWorld widget
 
 
 
-from spyderlib.qt.QtGui import (QPushButton, QHBoxLayout, QListWidget, QStackedWidget, QSplitter,
+from spyderlib.qt.QtGui import (QLineEdit, QGridLayout, QPushButton, QHBoxLayout, QListWidget, QStackedWidget, QSplitter,
                                 QWidget, QVBoxLayout,QLabel,QScrollArea,QListWidgetItem,QGroupBox)
 from spyderlib.qt.QtCore import *
 from xml.dom import minidom
@@ -37,42 +37,35 @@ class RateLawWidget(QWidget):
     """
     
     def __init__(self, parent, max_entries=100):
-        """ Creates a very basic window with some text """
-        """
-        RATE_LAW_MESSAGE = \
-            "The Plugins for Spyder consists out of three main classes: \n\n" \
-            "1. HelloWorld\n\n" \
-            "\tThe HelloWorld class inherits all its methods from\n" \
-            "\tSpyderPluginMixin and the HelloWorldWidget and performs all\n" \
-            "\tthe processing required by the GU. \n\n" \
-            "2. HelloWorldConfigPage\n\n" \
-            "\tThe HelloWorldConfig class inherits all its methods from\n" \
-            "\tPluginConfigPage to create a configuration page that can be\n" \
-            "\tfound under Tools -> Preferences\n\n" \
-            "3. HelloWorldWidget\n\n" \
-            "\tThe HelloWorldWidget class inherits all its methods from\n" \
-            "\tQWidget to create the actual plugin GUI interface that \n" \
-            "\tdisplays this message on screen\n\n"
-        """
-        #Testing access editor on plugin initialization
         
-        
-        RATE_LAW_MESSAGE = ""
-        h = 0
-        testtext = ""
-        foo = ""
+        "Initialize Various list objects before assignment"
+        displaylist = []
         displaynamelist = []
-        #displaylist = []
         infixmod = []
         infixlist = []
         desclist = []
+        
+        parameternamelist = []
+        parameterdesclist = []
         parameterstringlist = []
+        paramcountlist = []
+        
+        
+        
         buttonlist  = []
         xmldoc = minidom.parse('C:\\Users\\Jayit\\.spyder2\\ratelaw2_0_3.xml')
         #xmldoc = minidom.parse('%\\Downloads\\ratelaw2_0_3.xml')
         
         lawlistxml = xmldoc.getElementsByTagName('law')
-        #i is the number of laws currently in the xml file
+        
+        o = 0
+        for s in lawlistxml:
+            o = o + 1
+        
+        parameternamelistlist = [0 for x in range(o)]
+        parameterdesclistlist = [0 for x in range(o)]
+        
+        """i is the number of laws currently in the xml file"""
         i = 0
         
         """
@@ -80,26 +73,42 @@ class RateLawWidget(QWidget):
         """
         for s in lawlistxml:
             #RATE_LAW_MESSAGE += s.getAttribute('displayName') + "\n"
-            RATE_LAW_MESSAGE += s.getAttribute('display') + "\n"
-            #displaynamelist[i] = s.getAttribute('displayName')
-            #displaylist[i] = s.getAttribute('display')
-            displaynamelist.append(s.getAttribute('displayName'))
-            #displaylist.append(s.getAttribute('display'))
-            infixlist.append(s.getAttribute('infixExpression'))
-            desclist.append(s.getAttribute('description'))
-            parameterlist = s.getElementsByTagName('listOfParameters')[0]
-            #for p in parameterlist    
-            parameters = parameterlist.getElementsByTagName('parameter')
-            parameterstring = ""
-            for param in parameters:
-                parametername = param.attributes['name'].value
-                parameterdesc = param.attributes['description'].value
-                parameterstring = parameterstring + '\t' + parametername + ":" + '\t' + "  " + parameterdesc + "\n"
-                """Creates "description" string"""
-                #print('\t' + parametername + ":" + '\t' + parameterdesc)
-            parameterstringlist.append(parameterstring)    
-            i = i + 1
+            """Gets Latec Expression"""
+            displaylist.append(s.getAttribute('display'))
             
+            """Gets Rate-Law Name"""
+            displaynamelist.append(s.getAttribute('displayName'))
+            
+            """"Gets Raw Rate-Law expression"""
+            infixlist.append(s.getAttribute('infixExpression'))
+            
+            """Gets description statement"""
+            desclist.append(s.getAttribute('description'))
+            
+            """Gets listOfParameters Object"""
+            parameterlist = s.getElementsByTagName('listOfParameters')[0]
+            
+            """Gets a list of parameters within ListOfParameters object"""    
+            parameters = parameterlist.getElementsByTagName('parameter')
+            
+            for param in parameters:
+                parameternamelist.append(param.attributes['name'].value)
+                #print(param.attributes['name'].value)
+                parameterdesclist.append(param.attributes['description'].value)  
+            
+            parameternamelistlist[i] = parameternamelist
+            #print("break")
+            parameterdesclistlist[i] = parameterdesclist
+            
+            parameternamelist = []
+            parameterdesclist = []
+            i = i + 1
+        
+        SLElistlist = [ 0 for x in range(i)]
+        PLElistlist = [ 0 for x in range(i)]
+        ILElistlist = [ 0 for x in range(i)]
+        paramLElistlist = [ 0 for x in range(i)]
+        numlistlist = [ 0 for x in range(i)]
         
         QWidget.__init__(self, parent)
         
@@ -107,28 +116,20 @@ class RateLawWidget(QWidget):
         
         self.output = None
         self.error_output = None
-        
         self._last_wdir = None
         self._last_args = None
         self._last_pythonpath = None
         
-        self.textlabel = QLabel(RATE_LAW_MESSAGE)
+        #self.textlabel = QLabel(RATE_LAW_MESSAGE)
         
-        
-        
-
         self.lawlist = QListWidget()
         self.lawpage = QStackedWidget()
         index = 0
-        #Adding displayName items to lawlist
-        for j in range(i):
+        for j in range(i):            
             item = QListWidgetItem(displaynamelist[j])
             self.lawlist.addItem(item)
             self.lawdetailpage = QWidget()
-            # Page layout will become its own function
             setup_group = QGroupBox(displaynamelist[j])
-            #infixmod = infixlist[j].replace("___"," ")      
-            #setup_label = QLabel(infixmod)
             infixmod.append(infixlist[j].replace("___"," "))      
             setup_label = QLabel(infixmod[j])
             setup_label.setWordWrap(True)
@@ -136,160 +137,203 @@ class RateLawWidget(QWidget):
             desc_group = QGroupBox("Description")
             desc_label = QLabel(desclist[j])
             desc_label.setWordWrap(True)
-            param_label = QLabel(parameterstringlist[j])
-            param_label.setWordWrap(True)
+                        
+            param_label = QGridLayout()
+            nm = QLabel("Name:")
+            des = QLabel("Description:")
+            repl = QLabel("Replace with:")
+            param_label.addWidget(nm,0,0)
+            param_label.addWidget(des,0,1)
+            param_label.addWidget(repl,0,2)
+            """g is the total number of alterable values"""
+            g = 0
+            """t is the total number of alterable non-parameters"""
+            t = 1
             
-            #self.button = QPushButton(self)
-            #self.button.setText("Insert rate law")
-            #self.button.setText("button %s" % j )
-            #self.button.clicked.connect(lambda: self.insertText(infixmod[index]))
+            snum = 0
+            pnum = 0
+            inum = 0
+            
+            """range of N is the max number of possible substrates OR products"""
+            N = 5
+            for n in range(N):
+                nl = n+1
+                if (infixmod[j].find('S%s' % nl) > -1):
+                    z = QLabel('S%s is present' % nl)
+                    param_label.addWidget(z,t,0)
+                    snum = snum + 1
+                    t = t + 1
+            
+            for n in range(N):
+                nl = n+1    
+                if (infixmod[j].find('P%s' % nl) > -1):
+                    z = QLabel('P%s is present' % nl)
+                    param_label.addWidget(z,t,0)
+                    pnum = pnum + 1
+                    t = t + 1
+                    
+            for n in range(N):
+                nl = n+1
+                if (infixmod[j].find('I%s' % nl) > -1):
+                    z = QLabel('I%s is present' % nl)
+                    param_label.addWidget(z,t,0)
+                    inum = inum + 1
+                    t = t + 1
+            
+            """Initialize lists of list of parameter lineedit"""    
+            length = len(parameternamelistlist[j])
+            for b in range(length):
+                p = QLabel("%s :" % parameternamelistlist[j][b])
+                param_label.addWidget(p,b+t,0)
+                d = QLabel("'%s'" % parameterdesclistlist[j][b])
+                param_label.addWidget(d,b+t,1)
+            
+            g = t + length
+            
+            Slineeditlist = [0 for x in range(snum)]
+            Plineeditlist = [0 for x in range(pnum)]
+            Ilineeditlist = [0 for x in range(inum)]
+            paramlineeditlist = [0 for x in range(length)]
+            
+            editcount = 1
+            
+            """Place lineedit widgets for parameters"""
+            for s in range(snum):
+                Slineeditlist[s] = QLineEdit()
+                param_label.addWidget(Slineeditlist[s],editcount,2)
+                editcount = editcount + 1
+            
+            SLElistlist[j] = Slineeditlist
+            
+            for s in range(pnum):
+                Plineeditlist[s] = QLineEdit()
+                param_label.addWidget(Plineeditlist[s],editcount,2)
+                editcount = editcount + 1
+            
+            PLElistlist[j] = Plineeditlist
+            
+            for s in range(inum):
+                Ilineeditlist[s] = QLineEdit()
+                param_label.addWidget(Ilineeditlist[s],editcount,2)
+                editcount = editcount + 1
+               
+            ILElistlist[j] = Ilineeditlist   
+            
+            for s in range(length):
+                paramlineeditlist[s] = QLineEdit()
+                param_label.addWidget(paramlineeditlist[s],editcount,2)
+                editcount = editcount + 1
+            
+            paramLElistlist[j] = paramlineeditlist
+            
+            """Necessary lists for editable parameters. Housekeeping essentially."""
+            stuff = paramlineeditlist[0].text()            
+            numlistlist[j] = [snum, pnum, inum, length]
+            charlist = ["S","P","I"]
             
             
-            self.button = QPushButton(self)
-            buttonlist.append(self.button)
-            buttonlist[j].setText("button for rate law %s" % j)
-            testtext = infixmod[j]
-            #buttonlist[j].clicked.connect(lambda: self.insertText(testtext))
+            
+            buttonlist.append(QPushButton(self))
+            buttonlist[j].setText("Insert Rate Law: %s" % displaynamelist[j])
             
             
         # Warning: do not try to regroup the following QLabel contents with 
         # widgets above -- this string was isolated here in a single QLabel
         # on purpose: to fix Issue 863
+            """Page formatting"""
             setup_layout = QVBoxLayout()
             setup_layout.addWidget(setup_label)
             setup_group.setLayout(setup_layout)
+           
+            desc_group.setLayout(param_label)
             
-            desc_layout = QVBoxLayout()
-            desc_layout.addWidget(desc_label)
-            desc_layout.addWidget(param_label)
-            desc_group.setLayout(desc_layout)
-
             vlayout = QVBoxLayout()
             vlayout.addWidget(setup_group)
             vlayout.addWidget(desc_group)
-            #vlayout.addWidget(self.button)
             vlayout.addWidget(buttonlist[j])
             vlayout.addStretch(1)
             self.lawdetailpage.setLayout(vlayout)
-            
-            
-            #self.button.clicked.connect(lambda: self.insertText(infixmod[j]))
-            
             self.lawpage.addWidget(self.lawdetailpage)
         
-        #self.connect(self.lawlist, SIGNAL(self.lawlist.currentRowChanged(int)),self.lawpage,SLOT(self.lawpage.setCurrentIndex(int)))
-        
-        #for h in range(i):
-        #    foo = h 
-        #    buttonlist[h].clicked.connect(lambda: self.insertText("text for button %s" % h))
-        
-        #for h,infix in enumerate(infixmod):
-        #    buttonlist[h].clicked.connect(lambda: self.pressbutton(infix))
-        
-        
-        buttonlist[0].clicked.connect(lambda: self.insertText(infixmod[0]))
-        buttonlist[1].clicked.connect(lambda: self.insertText(infixmod[1]))
-        buttonlist[2].clicked.connect(lambda: self.insertText(infixmod[2]))
-        buttonlist[3].clicked.connect(lambda: self.insertText(infixmod[3]))
-        buttonlist[4].clicked.connect(lambda: self.insertText(infixmod[4]))
-        buttonlist[5].clicked.connect(lambda: self.insertText(infixmod[5]))
-        buttonlist[6].clicked.connect(lambda: self.insertText(infixmod[6]))
-        buttonlist[7].clicked.connect(lambda: self.insertText(infixmod[7]))
-        buttonlist[8].clicked.connect(lambda: self.insertText(infixmod[8]))
-        buttonlist[9].clicked.connect(lambda: self.insertText(infixmod[9]))
-        
-        buttonlist[10].clicked.connect(lambda: self.insertText(infixmod[10]))
-        buttonlist[11].clicked.connect(lambda: self.insertText(infixmod[11]))
-        buttonlist[12].clicked.connect(lambda: self.insertText(infixmod[12]))
-        buttonlist[13].clicked.connect(lambda: self.insertText(infixmod[13]))
-        buttonlist[14].clicked.connect(lambda: self.insertText(infixmod[14]))
-        buttonlist[15].clicked.connect(lambda: self.insertText(infixmod[15]))
-        buttonlist[16].clicked.connect(lambda: self.insertText(infixmod[16]))
-        buttonlist[17].clicked.connect(lambda: self.insertText(infixmod[17]))
-        buttonlist[18].clicked.connect(lambda: self.insertText(infixmod[18]))
-        buttonlist[19].clicked.connect(lambda: self.insertText(infixmod[19]))
-        
-        buttonlist[20].clicked.connect(lambda: self.insertText(infixmod[20]))
-        buttonlist[21].clicked.connect(lambda: self.insertText(infixmod[21]))
-        buttonlist[22].clicked.connect(lambda: self.insertText(infixmod[22]))
-        buttonlist[23].clicked.connect(lambda: self.insertText(infixmod[23]))
-        buttonlist[24].clicked.connect(lambda: self.insertText(infixmod[24]))
-        buttonlist[25].clicked.connect(lambda: self.insertText(infixmod[25]))
-        buttonlist[26].clicked.connect(lambda: self.insertText(infixmod[26]))
-        buttonlist[27].clicked.connect(lambda: self.insertText(infixmod[27]))
-        buttonlist[28].clicked.connect(lambda: self.insertText(infixmod[28]))
-        buttonlist[29].clicked.connect(lambda: self.insertText(infixmod[29]))
-        
-        buttonlist[30].clicked.connect(lambda: self.insertText(infixmod[30]))
-        buttonlist[31].clicked.connect(lambda: self.insertText(infixmod[31]))
-        buttonlist[32].clicked.connect(lambda: self.insertText(infixmod[32]))
-        buttonlist[33].clicked.connect(lambda: self.insertText(infixmod[33]))
-        buttonlist[34].clicked.connect(lambda: self.insertText(infixmod[34]))
-        buttonlist[35].clicked.connect(lambda: self.insertText(infixmod[35]))
-        buttonlist[36].clicked.connect(lambda: self.insertText(infixmod[36]))
-        buttonlist[37].clicked.connect(lambda: self.insertText(infixmod[37]))
-        buttonlist[38].clicked.connect(lambda: self.insertText(infixmod[38]))
-        buttonlist[39].clicked.connect(lambda: self.insertText(infixmod[39]))
-        
-        buttonlist[40].clicked.connect(lambda: self.insertText(infixmod[40]))
-        buttonlist[41].clicked.connect(lambda: self.insertText(infixmod[41]))
-        buttonlist[42].clicked.connect(lambda: self.insertText(infixmod[42]))
-        buttonlist[43].clicked.connect(lambda: self.insertText(infixmod[43]))
-        buttonlist[44].clicked.connect(lambda: self.insertText(infixmod[44]))
-        buttonlist[45].clicked.connect(lambda: self.insertText(infixmod[45]))
-        buttonlist[46].clicked.connect(lambda: self.insertText(infixmod[46]))
-        
-            
+        """Set up button functionality"""
+        for k in range(47):
+            buttonlist[k].clicked.connect(pressbutton(self, infixmod[k], SLElistlist[k], PLElistlist[k],ILElistlist[k], paramLElistlist[k], parameternamelistlist[k], numlistlist[k], charlist,k))
             
         self.lawlist.currentRowChanged.connect(self.lawpage.setCurrentIndex)
-        #h = self.lawlist.currentRow
-        
-        '''
-        self.lawpage = QWidget()
-        '''
         self.lawlist.setCurrentRow(0)
         
+        
+        """Set up high-level widget formatting."""
         hsplitter = QSplitter()
         hsplitter.addWidget(self.lawlist)
-        
-        
-        
-        '''
-        hlayout1 = QHBoxLayout()
-        hlayout1.addWidget(self.textlabel)
-        hlayout1.addStretch()
-        self.lawpage.setLayout(hlayout1)
-        '''
         hsplitter.addWidget(self.lawpage)
         
         layout = QVBoxLayout()
         layout.addWidget(hsplitter)
         self.setLayout(layout)
+  
+"""Testing LineEdit functionality"""    
+def entertext(self, le, string, stringlist):
+    
+    def entertextreal():
+        stuff = self.le.text()
+        string = "%s" % stuff
+        stringlist[0].replace("vo","%s" % string)
+    
+    return entertextreal    
+    
+"""Analyze lineedits on page, replace appropriate text, then paste text in console"""
+def pressbutton(ratelaw, string, SLElist, PLElist, ILElist, paramLElist, paramlist, numlist,charlist,j):
+    
+    def pressbuttoninsert():
+        print(string)
+        stringmod = string
+        for k in range(4):
+            
+            #print(stringmod)    
+            for i in range(numlist[k]):
+                print(str(numlist[k]))
+                l = i + 1
+                if (k == 0):
+                    stuff = SLElist[i].text()
+                    if (stuff.find(" ") != -1 or stuff.find('"') != -1):
+                        pass
+                    elif (stuff == ""):
+                        pass
+                    else:
+                        stringmod = stringmod.replace(charlist[k] + str(l),"%s" % stuff)
+                    print(stringmod)
+                if (k == 1):
+                    stuff = PLElist[i].text()
+                    if (stuff.find(" ") != -1 or stuff.find('"') != -1):
+                        pass
+                    elif (stuff == ""):
+                        pass
+                    else:
+                        stringmod = stringmod.replace(charlist[k] + str(l),"%s" % stuff)
+                    print(stringmod)
+                if (k == 2):
+                    stuff = ILElist[i].text()
+                    if (stuff.find(" ") != -1 or stuff.find('"') != -1):
+                        pass
+                    elif (stuff == ""):
+                        pass
+                    else:
+                        stringmod = stringmod.replace(charlist[k] + str(l),"%s" % stuff)
+                    print(stringmod)
+                if (k == 3):
+                    stuff = paramLElist[i].text()
+                    if (stuff.find(" ") != -1 or stuff.find('"') != -1):
+                        pass
+                    elif (stuff == ""):
+                        pass
+                    else:
+                        stringmod = stringmod.replace(paramlist[i],"%s" % stuff)
+                    print(stringmod)
+        print stringmod
+        ratelaw.insertText(stringmod)
         
-    #def insertText(self):
-    #    print(self.main.editor.get_current_editor().insert_text('string'))    
-        
-        
-'''        
-def create_law_page(displayname,display):
-    setup_group = QGroupBox(_(displayname))
-    setup_label = QLabel(_(display))
-    setup_label.setWordWrap(True)
-
-        # Warning: do not try to regroup the following QLabel contents with 
-        # widgets above -- this string was isolated here in a single QLabel
-        # on purpose: to fix Issue 863
-    setup_layout = QVBoxLayout()
-    setup_layout.addWidget(setup_label)
-    setup_group.setLayout(setup_layout)
-
-    vlayout = QVBoxLayout()
-    vlayout.addWidget(setup_group)
-    vlayout.addStretch(1)
-    self.setLayout(vlayout)
-'''            
-#def pressbutton(string):
-#    self.insertText(string)
+    return pressbuttoninsert
 
 def test():
     """Run RateLaw widget test"""
