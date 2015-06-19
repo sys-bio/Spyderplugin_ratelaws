@@ -117,7 +117,7 @@ class RateLaw(RateLawWidget, SpyderPluginMixin):
         
         #self.main.run_menu_actions += [helloworld_act]
         #self.main.editor.pythonfile_dependent_actions += [helloworld_act]
-        add_actions(self.main.external_tools_menu, [ratelaw_act])
+        #add_actions(self.main.external_tools_menu, [ratelaw_act])
 
     def refresh_plugin(self):
         """Refresh helloworld widget"""
