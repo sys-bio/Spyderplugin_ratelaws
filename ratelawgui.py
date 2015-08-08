@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import with_statement
+
+import os
+localpath = os.path.dirname(os.path.realpath(__file__))
 """
 Created on Sun Apr 19 18:12:51 2015
 
@@ -53,7 +56,7 @@ class RateLawWidget(QWidget):
         
         
         buttonlist  = []
-        xmldoc = minidom.parse('C:\\Users\\Jayit\\.spyder2\\ratelaw2_0_3.xml')
+        xmldoc = minidom.parse(os.path.join(localpath, 'ratelaw2_0_3.xml')
         #xmldoc = minidom.parse('%\\Downloads\\ratelaw2_0_3.xml')
         
         lawlistxml = xmldoc.getElementsByTagName('law')
